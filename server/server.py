@@ -54,7 +54,7 @@ class SecureServer:
             self.certificate = ca.issue_certificate("server", self.public_key)
         
         # Auth manager
-        self.auth = AuthManager('data/users.json')
+        self.auth = AuthManager('data/portal.db')
         
         # Storage encryption key (Blowfish)
         os.makedirs(os.path.dirname(self.STORAGE_KEY_FILE), exist_ok=True)
@@ -286,6 +286,9 @@ class SecureServer:
         with open(filepath, 'wb') as f:
             f.write(iv + ciphertext)
         
+        # Record file metadata in the database
+        self.auth.record_file(username, filename, filepath, len(data))
+        
         print(f"[SERVER] Stored encrypted file: {filename} for {username}")
         return True
     
@@ -304,7 +307,11 @@ class SecureServer:
         return self.blowfish.decrypt_cbc(ciphertext, iv)
     
     def _list_files(self, username: str) -> list:
-        """List files stored for a user."""
+        """List files stored for a user from the database."""
+        db_files = self.auth.get_user_files(username)
+        if db_files:
+            return [f['filename'] for f in db_files]
+        # Fallback to filesystem scan for backwards compatibility
         user_dir = os.path.join(self.STORAGE_DIR, username)
         if not os.path.exists(user_dir):
             return []

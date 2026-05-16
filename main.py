@@ -23,12 +23,23 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 
 def clean_data():
-    """Remove previous run data for a clean demo."""
+    """Remove previous run data for a clean demo (preserves the database)."""
     import shutil
-    for d in ['data', 'keys']:
+    for d in ['keys']:
         if os.path.exists(d):
             shutil.rmtree(d)
-    print("Cleaned previous data.\n")
+    # Clean encrypted files but keep the database
+    data_dir = 'data'
+    if os.path.exists(data_dir):
+        for item in os.listdir(data_dir):
+            item_path = os.path.join(data_dir, item)
+            if item.endswith('.db'):
+                continue  # preserve the SQLite database
+            if os.path.isdir(item_path):
+                shutil.rmtree(item_path)
+            else:
+                os.remove(item_path)
+    print("Cleaned previous data (database preserved).\n")
 
 
 def run_full_demo():
@@ -198,6 +209,7 @@ def run_interactive():
         print("│  5. List files                  │")
         print("│  6. Rotate storage key          │")
         print("│  7. View certificates           │")
+        print("│  8. View database               │")
         print("│  0. Exit                        │")
         print("└─────────────────────────────────┘")
 
@@ -237,14 +249,46 @@ def run_interactive():
         elif choice == '0':
             client.disconnect()
             server.stop()
+            # Close database connection
+            server.auth.close()
             print("Goodbye!")
             break
 
+        elif choice == '8':
+            data = server.auth.get_all_data()
+            print("\n┌─── Database Contents ───────────────┐")
+            print("│ USERS:")
+            if data['users']:
+                for u in data['users']:
+                    import datetime
+                    created = datetime.datetime.fromtimestamp(
+                        u['created_at']
+                    ).strftime('%Y-%m-%d %H:%M:%S')
+                    print(f"│   • {u['username']}  (created: {created})")
+            else:
+                print("│   (none)")
+            print("│")
+            print("│ FILES:")
+            if data['files']:
+                for f in data['files']:
+                    import datetime
+                    uploaded = datetime.datetime.fromtimestamp(
+                        f['uploaded_at']
+                    ).strftime('%Y-%m-%d %H:%M:%S')
+                    print(f"│   • {f['filename']}  owner={f['owner']}  "
+                          f"size={f['file_size']}B  uploaded={uploaded}")
+            else:
+                print("│   (none)")
+            print("└─────────────────────────────────────┘")
+
 
 if __name__ == '__main__':
-    clean_data()
-
-    if len(sys.argv) > 1 and sys.argv[1] == '--interactive':
+    if len(sys.argv) > 1 and sys.argv[1] == '--gui':
+        from gui_server import main as gui_main
+        gui_main()
+    elif len(sys.argv) > 1 and sys.argv[1] == '--interactive':
+        clean_data()
         run_interactive()
     else:
+        clean_data()
         run_full_demo()
