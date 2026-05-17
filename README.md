@@ -1,10 +1,10 @@
-# 🔐 Secure Cloud Document Portal
+# Secure Cloud Document Portal
 
 A **fully custom-built** secure cloud document storage system implemented entirely in Python — **without any external cryptographic libraries**. Every algorithm (Blowfish, ChaCha20, ElGamal) is hand-coded from scratch, demonstrating low-level cryptographic concepts in a real client-server application.
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Architecture](#architecture)
@@ -280,13 +280,13 @@ python main.py --gui
 ```
 
 The GUI features:
-- 🔐 Login / Registration screen
-- 📁 File upload & download with progress
-- 🔏 Certificate viewer with validity badges
-- 🗄️ Database inspector (users + files)
-- ⚡ Performance benchmark runner
-- 📋 Real-time system log viewer
-- 🔄 Storage key rotation
+- Login / Registration screen
+- File upload & download with progress
+- Certificate viewer with validity badges
+- Database inspector (users + files)
+- Performance benchmark runner
+- Real-time system log viewer
+- Storage key rotation
 
 ---
 
@@ -448,10 +448,6 @@ Includes:
 These use small enough numbers that every step can be verified with pen and paper.
 
 ---
-
-## License
-
-This project is developed for academic purposes.
 
 ---
 
